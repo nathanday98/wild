@@ -19,6 +19,7 @@ global_variable StackAllocator g_frame_stack;
 #include <time.h>
 
 #include <game/assets.cpp>
+#include <game/world.cpp>
 
 #define CHUNK_W 32
 #define CHUNK_H 32
@@ -104,6 +105,7 @@ struct GameState {
 	Vec2 world_mouse_prev_pos;
 	int frame_index;
 	f32 frame_timer;
+	World world;
 
 	Vec2 worldCollider(Vec2 pos, f32 radius, Vec2 vel, bool &hit, Vec2 &normal, bool stick = false) {
 		Vec2 dest = pos + vel;
@@ -180,6 +182,12 @@ struct GameState {
 	    jumping = false;
 	    gravity_vel = 0.0f;
 	    fire_timer = 0.0f;
+	    
+	    Entity test_ent = world.allocEntity();
+	    world.assignEntityComponent(test_ent, Component::Transform | Component::Sprite);
+	    *world.getEntityTransform(test_ent) = {Vec3()};
+	    *world.getEntitySprite(test_ent) = {Vec2(1.5f, 2.25f), Vec4(1.0f, 1.0f, 0.0f, 1.0f)};
+	    
 	    
 	}
 	
@@ -260,7 +268,14 @@ struct GameState {
 		// player_pos = worldCollider(player_pos, 0.5f, player_vel * delta, hit, target_normal);
 		
 		
-		
+		// NOTE(nathan): temp jump system
+		for(int i = 0; i < MAX_ENTITIES; i++) {
+			Entity e = world.entities[i];
+			if(world.entityHasComponent(e, Component::Sprite | Component::Transform)) {
+				Transform *transform = world.getEntityTransform(e);
+				transform->position.y = Math::abs(Math::sin(timer)) * 6.0f;
+			}
+		}
 		
 		
 		
@@ -395,7 +410,6 @@ struct GameState {
 		// debug_renderer.fillCircle(camera.world_mouse_pos, 1.0f);
 		s32 seg_index = Math::floorToInt((22.5f + -Math::toDegrees(Vec2::angle(Vec2::up(), -Vec2::normalize(camera.world_mouse_pos - player_pos)))) / 45.0f);
 		
-		
 		f32 d_scale = -Math::sign(seg_index);
 		if(d_scale == 0) d_scale = 1;
 		s32 anim_index = Math::abs(seg_index);
@@ -410,6 +424,20 @@ struct GameState {
 		}
 		
 		debug_renderer.fillCircle(player_pos, 1.0f, Vec4(0.0f, 0.0f, 0.0f, 0.5f));
+		
+		// NOTE(nathan): sprite system
+		for(int i = 0; i < MAX_ENTITIES; i++) {
+			Entity e = world.entities[i];
+			if(world.entityHasComponent(e, Component::Sprite | Component::Transform)) {
+				Sprite *sprite = world.getEntitySprite(e);
+				Transform *transform = world.getEntityTransform(e);
+				Vec2 pos = Vec2(transform->position.x, (transform->position.z + sprite->size.y * 0.5f) + transform->position.y);
+				
+				f32 y_mod = transform->position.y * 0.1f;
+				debug_renderer.fillCircle(Vec2(transform->position.x, transform->position.z), 1.0f-y_mod, Vec4(0.0f, 0.0f, 0.0f, 0.5f));
+				debug_renderer.fillRect(pos, sprite->size, sprite->color);
+			}
+		}
 		
 		render_context->bindShader(&debug_renderer.textured_shader);
 		
