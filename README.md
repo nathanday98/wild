@@ -6,8 +6,8 @@ Features <br />
 * Hot-reloading of game code <br />
 * Analytical collision solver <br />
 * Circle swept collision solving <br />
-..* Line segments <br />
-..* AABBs <br />
-..* Circles <br />
-..* Cubic Bezier curves <br />
+ * Line segments <br />
+ * AABBs <br />
+ * Circles <br />
+ * Cubic Bezier curves <br />
 * 'Collide and slide' algorithm implementation <br />
