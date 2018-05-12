@@ -11,3 +11,5 @@ Features <br />
   * Circles <br />
   * Cubic Bezier curves <br />
 * 'Collide and slide' algorithm implementation <br />
+* Saving and loading of geometry
+* Various debug rendering primitives
