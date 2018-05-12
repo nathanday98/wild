@@ -1,4 +1,4 @@
-A Simple 2D engine
+A Simple 2D engine inspired by the Ubi-Art Framework
 
 Features <br />
 * Basic abstraction over Directx11 <br />
