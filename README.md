@@ -13,3 +13,5 @@ Features <br />
 * 'Collide and slide' algorithm implementation <br />
 * Saving and loading of geometry
 * Various debug rendering primitives
+* In-game editor (press f4 to toggle)
+* Dynamic light volume generation
