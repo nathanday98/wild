@@ -1,0 +1,5 @@
+wild.exe
+game.dll
+sdl2.dll
+imgui.dll
+..\data

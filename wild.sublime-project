@@ -1,0 +1,32 @@
+{
+	"build_systems":
+	[
+		{
+			"cmd": "build",
+			"file_regex": "^ *([A-z]:.*)[(]([0-9]+)[)]",
+			"linux":
+			{
+				"shell_cmd": "./build.sh"
+			},
+			"name": "build_bat",
+			"windows":
+			{
+				"cmd": "build.bat"
+			},
+			"working_dir": "${project_path:${folder}}"
+		}
+	],
+	"folders":
+	[
+		{
+			"folder_exclude_patterns":
+			[
+				"temp",
+				"build",
+				"data",
+				"deps",
+			],
+			"path": ".",
+		},
+	]
+}

@@ -1,0 +1,3 @@
+build/*
+temp/*
+*.sublime-workspace
