@@ -1,4 +1,4 @@
-A Simple 2D engine inspired by the Ubi-Art Framework
+A Simple 2D engine inspired by the Ubi-Art Framework (in active development)
 
 Features <br />
 * Basic abstraction over Directx11 (core/d3d_render_context.cpp)
