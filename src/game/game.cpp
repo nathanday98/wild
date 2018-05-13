@@ -169,6 +169,13 @@ struct GameState {
 		camera.position = player_pos;
 	}
 	
+	void createNpc(Vec3 position) {
+		Entity test_ent = world.allocEntity();
+	    world.assignEntityComponent(test_ent, Component::Transform | Component::Sprite);
+	    *world.getEntityTransform(test_ent) = {position};
+	    *world.getEntitySprite(test_ent) = {Vec2(1.5f, 2.25f), Vec4(1.0f, 1.0f, 0.0f, 1.0f)};
+	}
+	
 	void init(RenderContext *render_context, Assets *assets) {
 		camera.half_size = Vec2(32.0f, 18.0f);
 		frame_index = 0;
@@ -183,12 +190,8 @@ struct GameState {
 	    gravity_vel = 0.0f;
 	    fire_timer = 0.0f;
 	    
-	    Entity test_ent = world.allocEntity();
-	    world.assignEntityComponent(test_ent, Component::Transform | Component::Sprite);
-	    *world.getEntityTransform(test_ent) = {Vec3()};
-	    *world.getEntitySprite(test_ent) = {Vec2(1.5f, 2.25f), Vec4(1.0f, 1.0f, 0.0f, 1.0f)};
-	    
-	    
+	    createNpc(Vec3());
+	    createNpc(Vec3(5.0f, 0.0f, 5.0f)); 
 	}
 	
 	void fireBullet(Vec2 position, Vec2 direction) {
@@ -269,8 +272,7 @@ struct GameState {
 		
 		
 		// NOTE(nathan): temp jump system
-		for(int i = 0; i < MAX_ENTITIES; i++) {
-			Entity e = world.entities[i];
+		for(Entity e = 0; e < MAX_ENTITIES; e++) {
 			if(world.entityHasComponent(e, Component::Sprite | Component::Transform)) {
 				Transform *transform = world.getEntityTransform(e);
 				transform->position.y = Math::abs(Math::sin(timer)) * 6.0f;
@@ -426,8 +428,7 @@ struct GameState {
 		debug_renderer.fillCircle(player_pos, 1.0f, Vec4(0.0f, 0.0f, 0.0f, 0.5f));
 		
 		// NOTE(nathan): sprite system
-		for(int i = 0; i < MAX_ENTITIES; i++) {
-			Entity e = world.entities[i];
+		for(Entity e = 0; e < MAX_ENTITIES; e++) {
 			if(world.entityHasComponent(e, Component::Sprite | Component::Transform)) {
 				Sprite *sprite = world.getEntitySprite(e);
 				Transform *transform = world.getEntityTransform(e);

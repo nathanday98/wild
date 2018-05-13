@@ -8,6 +8,14 @@ static Component operator |(Component left, Component right) {
 	return (Component)((u32)left | (u32)right);
 }
 
+static void operator |=(Component &left, Component &right) {
+	left = (Component)((u32)left | (u32)right);
+}
+
+static Component operator &(Component left, Component right) {
+	return (Component)((u32)left & (u32)right);
+}
+
 struct Transform {
 	Vec3 position;	
 };
@@ -21,13 +29,13 @@ struct Sprite {
 typedef u32 Entity;
 
 struct World {
-	Entity entities[MAX_ENTITIES];
+	Component entities[MAX_ENTITIES];
 	Transform entity_transforms[MAX_ENTITIES];
 	Sprite entity_sprites[MAX_ENTITIES];
 	
 	Entity allocEntity() {
 		for(int i = 0; i < MAX_ENTITIES; i++) {
-			if(entities[i] == (u32)Component::None) {
+			if(entities[i] == Component::None) {
 				return i;
 			}
 		}
@@ -37,11 +45,11 @@ struct World {
 	}
 	
 	bool entityHasComponent(Entity entity, Component comp) {
-		return (entities[entity] & (u32)comp) == (u32)comp;
+		return (entities[entity] & comp) == comp;
 	}
 	
 	void assignEntityComponent(Entity entity, Component comp) {
-		entities[entity] |= (u32)comp;
+		entities[entity] |= comp;
 	}
 	
 	Transform *getEntityTransform(Entity entity) {
