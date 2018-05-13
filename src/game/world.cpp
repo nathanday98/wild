@@ -25,6 +25,8 @@ struct Sprite {
 	Vec4 color;	
 };
 
+
+
 #define MAX_ENTITIES 64
 typedef u32 Entity;
 

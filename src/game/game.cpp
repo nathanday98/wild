@@ -20,6 +20,7 @@ global_variable StackAllocator g_frame_stack;
 
 #include <game/assets.cpp>
 #include <game/world.cpp>
+#include <algorithm>
 
 #define CHUNK_W 32
 #define CHUNK_H 32
@@ -77,6 +78,11 @@ struct Light {
 	f32 angle_spread;
 	f32 angle_start;	
 	s32 ray_count;
+};
+
+struct RenderPacket {
+	Sprite *sprite;
+	Vec3 position;	
 };
 
 #define BULLET_POOL_MAX 256
@@ -169,11 +175,11 @@ struct GameState {
 		camera.position = player_pos;
 	}
 	
-	void createNpc(Vec3 position) {
+	void createNpc(Vec3 position, Vec4 color) {
 		Entity test_ent = world.allocEntity();
 	    world.assignEntityComponent(test_ent, Component::Transform | Component::Sprite);
 	    *world.getEntityTransform(test_ent) = {position};
-	    *world.getEntitySprite(test_ent) = {Vec2(1.5f, 2.25f), Vec4(1.0f, 1.0f, 0.0f, 1.0f)};
+	    *world.getEntitySprite(test_ent) = {Vec2(1.5f, 2.25f), color};
 	}
 	
 	void init(RenderContext *render_context, Assets *assets) {
@@ -190,8 +196,8 @@ struct GameState {
 	    gravity_vel = 0.0f;
 	    fire_timer = 0.0f;
 	    
-	    createNpc(Vec3());
-	    createNpc(Vec3(5.0f, 0.0f, 5.0f)); 
+	    createNpc(Vec3(), Vec4(1.0f, 1.0f, 0.0f, 1.0f));
+	    createNpc(Vec3(5.0f, 0.0f, 5.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f)); 
 	}
 	
 	void fireBullet(Vec2 position, Vec2 direction) {
@@ -276,6 +282,7 @@ struct GameState {
 			if(world.entityHasComponent(e, Component::Sprite | Component::Transform)) {
 				Transform *transform = world.getEntityTransform(e);
 				transform->position.y = Math::abs(Math::sin(timer)) * 6.0f;
+				ImGui::DragFloat3(formatString("Position %d", e), &transform->position.xyz[0], 0.1f);
 			}
 		}
 		
@@ -427,18 +434,33 @@ struct GameState {
 		
 		debug_renderer.fillCircle(player_pos, 1.0f, Vec4(0.0f, 0.0f, 0.0f, 0.5f));
 		
+		RenderPacket *frame_sprites = (RenderPacket *)g_frame_stack.getTop();
+		int frame_sprite_count = 0;
+		StackAllocator::Marker fs_marker = g_frame_stack.getMarker();
 		// NOTE(nathan): sprite system
 		for(Entity e = 0; e < MAX_ENTITIES; e++) {
 			if(world.entityHasComponent(e, Component::Sprite | Component::Transform)) {
 				Sprite *sprite = world.getEntitySprite(e);
 				Transform *transform = world.getEntityTransform(e);
-				Vec2 pos = Vec2(transform->position.x, (transform->position.z + sprite->size.y * 0.5f) + transform->position.y);
-				
-				f32 y_mod = transform->position.y * 0.1f;
-				debug_renderer.fillCircle(Vec2(transform->position.x, transform->position.z), 1.0f-y_mod, Vec4(0.0f, 0.0f, 0.0f, 0.5f));
-				debug_renderer.fillRect(pos, sprite->size, sprite->color);
+				RenderPacket *rp = (RenderPacket *)g_frame_stack.alloc(sizeof(RenderPacket));
+				*rp = {sprite, transform->position};
+				frame_sprite_count++;
 			}
 		}
+		
+		std::sort(frame_sprites, frame_sprites+frame_sprite_count, [](RenderPacket &a, RenderPacket &b) {
+			return a.position.z > b.position.z;
+		});
+		
+		for(int i = 0; i < frame_sprite_count; i++) {
+			RenderPacket *rp = &frame_sprites[i];
+			Vec2 pos = Vec2(rp->position.x, (rp->position.z + rp->sprite->size.y * 0.5f) + rp->position.y);
+			f32 y_mod = rp->position.y * 0.1f;
+			debug_renderer.fillCircle(Vec2(rp->position.x, rp->position.z), 1.0f-y_mod, Vec4(0.0f, 0.0f, 0.0f, 0.5f));
+			debug_renderer.fillRect(pos, rp->sprite->size, rp->sprite->color);
+		}
+		
+		g_frame_stack.freeToMarker(fs_marker);
 		
 		render_context->bindShader(&debug_renderer.textured_shader);
 		
